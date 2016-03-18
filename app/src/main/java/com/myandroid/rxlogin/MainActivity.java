@@ -16,6 +16,7 @@ import com.jakewharton.rxbinding.widget.RxTextView;
 import com.myandroid.model.InputValidation;
 
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func2;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -79,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
                 .map(InputValidation::stringOfTextChangEvent);
 
         rx.Observable<InputValidation> inputValidationObservable = rx.Observable
-                .zip(
+                .combineLatest(
                         userNameObservable,
                         passwordObservable,
                         confirmedPasswordObservable,
@@ -90,9 +91,12 @@ public class MainActivity extends AppCompatActivity {
                 })
                 .observeOn(AndroidSchedulers.mainThread());
 
-        RxView.clicks(submitbutton)
-                .zipWith(inputValidationObservable,
-                        (onClickEvent, inputValidation) -> inputValidation)
-                .subscribe();
+        rx.Observable
+                .combineLatest(inputValidationObservable, inputValidationObservable , new Func2<InputValidation, InputValidation, InputValidation>() {
+                    @Override
+                    public InputValidation call(InputValidation inputValidation, InputValidation inputValidation2) {
+                        return inputValidation2;
+                    }
+                }).subscribe();
     }
 }
